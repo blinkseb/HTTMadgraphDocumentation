@@ -1,8 +1,8 @@
-This page summarize what it's needed to generate the Higgs signal with interference, but no background.
+This page summarizes what it's needed to generate the Higgs signal with interference, but no background.
 
 # Madgraph installation
 
-Setup the environment using the following script (traditionally called `setup_env.sh`):
+- Setup the environment using the following script (traditionally called `setup_env.sh`):
 ```bash
 #! /bin/bash
 
@@ -29,7 +29,9 @@ local_path=`find . -type d -name 'DECAY'`
 abs_path=`readlink -f ${local_path}`
 export DECAY=$abs_path
 ```
+You may need to adapt the path if you don't have a CVMFS installation.
 
+- Source the script you just created to setup the environment
 - Download and install LHAPDF:
 ```bash
 curl -O -L http://www.hepforge.org/archive/lhapdf/lhapdf-5.9.1.tar.gz

@@ -30,7 +30,7 @@ abs_path=`readlink -f ${local_path}`
 export DECAY=$abs_path
 ```
 
- * Download and install LHAPDF:
+- Download and install LHAPDF:
 ```bash
 curl -O -L http://www.hepforge.org/archive/lhapdf/lhapdf-5.9.1.tar.gz
 tar xf lhapdf-5.9.1.tar.gz
@@ -40,20 +40,18 @@ make -j20
 make install
 ```
 
- * Get CT10 PDF:
+- Get CT10 PDF:
 ```bash
 mkdir <main_folder>/share/lhapdf/PDFsets
 curl -o <main_folder>/share/lhapdf/PDFsets/CT10.LHgrid -L http://www.hepforge.org/archive/lhapdf/pdfsets/5.9.1/CT10.LHgrid
 ```
-
-
- * Download Madgraph. You need v2.2.1 at least. For the purpose of this document, I'll use version 2.2.1. Adapt all the paths if your are using a more recent version.
+- Download Madgraph. You need v2.2.1 at least. For the purpose of this document, I'll use version 2.2.1. Adapt all the paths if your are using a more recent version.
 ```bash
 curl -O -L https://launchpad.net/mg5amcnlo/2.0/2.2.0/+download/MG5_aMC_v2.2.1.tar.gz
 tar xf MG5_aMC_v2.2.1.tar.gz
 ```
 
- * Configure Madgraph to use our LHAPDF:
+- Configure Madgraph to use our LHAPDF:
 ```
 cd MG5_aMC_v2_2_1/input
 ```
@@ -61,8 +59,7 @@ cd MG5_aMC_v2_2_1/input
 ```
 lhapdf = <path_to_lhapdf-config> (something like /gridgroup/cms/brochet/HTT/SL6/Madgraph5/bin/lhapdf-config)
 ```
-
- * Download and install DECAY
+- Download and install DECAY
 ```
 cd MG5_aMC_v2_2_1/
 curl -O -L https://github.com/blinkseb/HTTMadgraphDocumentation/releases/download/v0.1/DECAY.tar.bz2
@@ -75,7 +72,8 @@ cd ../..
 curl -O -L https://github.com/blinkseb/HTTMadgraphDocumentation/releases/download/v0.1/runDecay.sh
 chmod +x runDecay.sh
 ```
- * There is a patch to apply not yet included in the official distribution. Edit the file `madgraph/various/combine_runs.py` and apply the following patch (you need to add the lines starting with a `+` to the file, you have some context around to see where to put the modifications ; below line 143). It's possible that the patch is already applied to the file if you use a version more recent than 2.2.1.
+
+- There is a patch to apply not yet included in the official distribution. Edit the file `madgraph/various/combine_runs.py` and apply the following patch (you need to add the lines starting with a `+` to the file, you have some context around to see where to put the modifications ; below line 143). It's possible that the patch is already applied to the file if you use a version more recent than 2.2.1.
 ```
 === modified file 'madgraph/various/combine_runs.py'
 --- madgraph/various/combine_runs.py	2013-11-29 07:28:53 +0000
@@ -91,7 +89,7 @@ chmod +x runDecay.sh
              fsock.write(line)
 ```
 
- * Madgraph is installed and functionnal.
+- Madgraph is installed and functionnal.
 
 # Setup TopBSM model
 
@@ -106,12 +104,12 @@ tar xf topBSM_v4.tar.bz2
 
 The first thing to do is to generate a template process. We'll use this template as a base to generate signal with different masses and couplings.
 
- * Go to the Madgraph folder and launch it
+- Go to the Madgraph folder and launch it
 ```
 ./bin/mg5_aMC
 ```
 
- * Load the topBSM model, and generate `g g > t t~`
+- Load the topBSM model, and generate `g g > t t~`
 ```
 import model_v4 topBSM
 generate g g > t t~ / o0 QED=2 QCD=2 QS0=2 Qs2=0 QS1=0
@@ -119,64 +117,65 @@ output gg_tt_template
 exit
 ```
 
- * Edit the run card to set default values. **This step is very important, do not forget it**.
-   * Go to the folder `gg_tt_template`, and edit the file `Cards/run_card.dat`
-   * First, change `ebeam1` and `ebeam2` to the desired center of mass energy (for 8 TeV, set both to 4000)
-   * Change `pdlabel` (usually line 51) from `cteq6l1` to `lhapdf` to use external LHAPDF
-   * Change `lhaid` (next line) from `10042` to `10800` to use the CT10 PDF
-   * **Very important** After the line containing `scalefact`, add the following line
-```
-F        = fixed_couplings
-```
-   * Just below, change the version of the LHE file produced by inserting the following line
-```
-1.0      = lhe_version       ! Change the way clustering information pass to shower.
-```
-   * Change `maxjetflavor` from `4` to `5`
-   * Finally, change 'xqcut' from `0` to `20`
-   * **Optionnal** You can also change the number of generated events with the options `nevents`. Don't go over 500000.
+- Edit the run card to set default values. **This step is very important, do not forget it**.
+    - Go to the folder `gg_tt_template`, and edit the file `Cards/run_card.dat`
+    - First, change `ebeam1` and `ebeam2` to the desired center of mass energy (for 8 TeV, set both to 4000)
+    - Change `pdlabel` (usually line 51) from `cteq6l1` to `lhapdf` to use external LHAPDF
+    - Change `lhaid` (next line) from `10042` to `10800` to use the CT10 PDF
+    - **Very important** After the line containing `scalefact`, add the following line
 
- * The next part is the tricky one. We'll modify Madgraph code to compute only signal + interference, without the background.
-   * Go the the `SubProcesses/P0_gg_ttx` folder. This folder contains the source code for the matrix element computation in the file `matrix1.f`. Open this file.
-   * Interesting code starts around line 263, with the line `CALL VXXXXX(P(0,1),ZERO,NHEL(1),-1*IC(1),W(1,1))`. This is a call to HELAS in order to compute a vertex.
-   * After the series of `CALL` (line 279), the amplitude of each diagrams are computed are stored inside the `AMP` array. `AMP(1)` contains the amplitude of the first diagram, `AMP(2)` the one of the second diagram, etc. Open the file matrix.jpg to see all the diagrams and which index corresponds to which diagram.
-   * Computation of the matrix element is done on lines 282 to 289. The first thing to do is to comment these lines. To do that, simply insert `c` at the beginning of each line
-   * After the final `ENDDO` (line 296), insert the following code.
-```
-      MATRIX1 = 0.D0
-c     Compute matrix element directly from formula.
+            F        = fixed_couplings
 
-c     Squared matrix element for diagram 1
-c     MATRIX1 = MATRIX1 + 12*AMP(1)*DCONJG(AMP(1))
+    - Just below, change the version of the LHE file produced by inserting the following line
+    
+            1.0      = lhe_version       ! Change the way clustering information pass to shower.
 
-c     Squared matrix element for diagram 2
-      MATRIX1 = MATRIX1 + 24*AMP(2)*DCONJG(AMP(2))
+  - Change `maxjetflavor` from `4` to `5`
+  - Finally, change 'xqcut' from `0` to `20`
+  - **Optionnal** You can also change the number of generated events with the options `nevents`. Don't go over 500000.
 
-c     Squared matrix element for diagram 3
-c      MATRIX1 = MATRIX1 + 16D0/3D0*AMP(3)*DCONJG(AMP(3))
+- The next part is the tricky one. We'll modify Madgraph code to compute only signal + interference, without the background.
+    - Go the the `SubProcesses/P0_gg_ttx` folder. This folder contains the source code for the matrix element computation in the file `matrix1.f`. Open this file.
+    - Interesting code starts around line 263, with the line `CALL VXXXXX(P(0,1),ZERO,NHEL(1),-1*IC(1),W(1,1))`. This is a call to HELAS in order to compute a vertex.
+    - After the series of `CALL` (line 279), the amplitude of each diagrams are computed are stored inside the `AMP` array. `AMP(1)` contains the amplitude of the first diagram, `AMP(2)` the one of the second diagram, etc. Open the file matrix.jpg to see all the diagrams and which index corresponds to which diagram.
+    - Computation of the matrix element is done on lines 282 to 289. The first thing to do is to comment these lines. To do that, simply insert `c` at the beginning of each line
+    - After the final `ENDDO` (line 296), insert the following code.
 
-c     Squared matrix element for diagram 4
-c      MATRIX1 = MATRIX1 + 16D0/3D0*AMP(4)*DCONJG(AMP(4))
 
-c     Interference between backgrounds
-c      MATRIX1 = MATRIX1 + 6*AMP(3)*DCONJG(AMP(1))
-c      MATRIX1 = MATRIX1 + 6*AMP(1)*DCONJG(AMP(3))
-c      MATRIX1 = MATRIX1 - 6*AMP(4)*DCONJG(AMP(1))
-c      MATRIX1 = MATRIX1 - 6*AMP(1)*DCONJG(AMP(4))
-c      MATRIX1 = MATRIX1 - 2D0/3D0*AMP(4)*DCONJG(AMP(3))
-c      MATRIX1 = MATRIX1 - 2D0/3D0*AMP(3)*DCONJG(AMP(4))
+                  MATRIX1 = 0.D0
+            c     Compute matrix element directly from formula.
+            
+            c     Squared matrix element for diagram 1
+            c     MATRIX1 = MATRIX1 + 12*AMP(1)*DCONJG(AMP(1))
+            
+            c     Squared matrix element for diagram 2
+                  MATRIX1 = MATRIX1 + 24*AMP(2)*DCONJG(AMP(2))
+            
+            c     Squared matrix element for diagram 3
+            c      MATRIX1 = MATRIX1 + 16D0/3D0*AMP(3)*DCONJG(AMP(3))
+            
+            c     Squared matrix element for diagram 4
+            c      MATRIX1 = MATRIX1 + 16D0/3D0*AMP(4)*DCONJG(AMP(4))
+            
+            c     Interference between backgrounds
+            c      MATRIX1 = MATRIX1 + 6*AMP(3)*DCONJG(AMP(1))
+            c      MATRIX1 = MATRIX1 + 6*AMP(1)*DCONJG(AMP(3))
+            c      MATRIX1 = MATRIX1 - 6*AMP(4)*DCONJG(AMP(1))
+            c      MATRIX1 = MATRIX1 - 6*AMP(1)*DCONJG(AMP(4))
+            c      MATRIX1 = MATRIX1 - 2D0/3D0*AMP(4)*DCONJG(AMP(3))
+            c      MATRIX1 = MATRIX1 - 2D0/3D0*AMP(3)*DCONJG(AMP(4))
+            
+            c     Interference between signal and background
+                  MATRIX1 = MATRIX1 + 4*AMP(3)*DCONJG(AMP(2))
+                  MATRIX1 = MATRIX1 + 4*AMP(2)*DCONJG(AMP(3))
+            
+                  MATRIX1 = MATRIX1 + 4*AMP(4)*DCONJG(AMP(2))
+                  MATRIX1 = MATRIX1 + 4*AMP(2)*DCONJG(AMP(4))
 
-c     Interference between signal and background
-      MATRIX1 = MATRIX1 + 4*AMP(3)*DCONJG(AMP(2))
-      MATRIX1 = MATRIX1 + 4*AMP(2)*DCONJG(AMP(3))
+    - Interference between backgrounds are already commented in order to generate only signal + interference
+    - Details of the calculation can be found in the attached Mathematica notebook.
 
-      MATRIX1 = MATRIX1 + 4*AMP(4)*DCONJG(AMP(2))
-      MATRIX1 = MATRIX1 + 4*AMP(2)*DCONJG(AMP(4))
-```
-   * Interference between backgrounds are already commented in order to generate only signal + interference
-   * Details of the calculation can be found in the attached Mathematica notebook.
-
- * The template if now ready for the generation.
+- The template if now ready for the generation.
 
 # Generate the signal
 

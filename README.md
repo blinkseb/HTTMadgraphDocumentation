@@ -138,10 +138,10 @@ exit
 
 - The next part is the tricky one. We'll modify Madgraph code to compute only signal + interference, without the background.
     - Go the the `SubProcesses/P0_gg_ttx` folder. This folder contains the source code for the matrix element computation in the file `matrix1.f`. Open this file.
-    - Interesting code starts around line 263, with the line `CALL VXXXXX(P(0,1),ZERO,NHEL(1),-1*IC(1),W(1,1))`. This is a call to HELAS in order to compute a vertex.
-    - After the series of `CALL` (line 279), the amplitude of each diagrams are computed are stored inside the `AMP` array. `AMP(1)` contains the amplitude of the first diagram, `AMP(2)` the one of the second diagram, etc. Open the file matrix.jpg to see all the diagrams and which index corresponds to which diagram.
-    - Computation of the matrix element is done on lines 282 to 289. The first thing to do is to comment these lines. To do that, simply insert `c` at the beginning of each line
-    - After the final `ENDDO` (line 296), insert the following code.
+    - Interesting code starts around line 272, with the line `CALL VXXXXX(P(0,1),ZERO,NHEL(1),-1*IC(1),W(1,1))`. This is a call to HELAS in order to compute a vertex.
+    - After the series of `CALL` (line 287), the amplitude of each diagrams are computed are stored inside the `AMP` array. `AMP(1)` contains the amplitude of the first diagram, `AMP(2)` the one of the second diagram, etc. Open the file matrix.jpg to see all the diagrams and which index corresponds to which diagram.
+    - Computation of the matrix element is done on lines 293 to 306. The first thing to do is to comment these lines. To do that, simply insert `c` at the beginning of each line
+    - After the final `ENDDO` (line 320), insert the following code.
 
 
                   MATRIX1 = 0.D0

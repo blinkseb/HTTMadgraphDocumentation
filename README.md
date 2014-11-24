@@ -9,8 +9,10 @@ This page summarizes what it's needed to generate the Higgs signal with interfer
 echo "Sourcing root"
 source /cvmfs/cms.cern.ch/slc6_amd64_gcc481/lcg/root/5.34.17-cms/bin/thisroot.sh
 
+source /cvmfs/cms.cern.ch/slc6_amd64_gcc481/external/zlib/1.2.8/etc/profile.d/init.sh
 source /cvmfs/cms.cern.ch/slc6_amd64_gcc481/external/libjpg/8b/etc/profile.d/init.sh
 source /cvmfs/cms.cern.ch/slc6_amd64_gcc481/external/libpng/1.6.0-cms/etc/profile.d/init.sh
+source /cvmfs/cms.cern.ch/slc6_amd64_gcc481/external/xz/5.0.3__5.1.2alpha-cms5/etc/profile.d/init.sh
 
 echo "Sourcing gcc / gdb"
 source /cvmfs/cms.cern.ch/slc6_amd64_gcc481/external/gcc/4.8.1/etc/profile.d/init.sh;
